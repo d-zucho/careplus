@@ -12,15 +12,16 @@ import {
 } from '@/components/ui/form'
 // validation
 import { zodResolver } from '@hookform/resolvers/zod'
-import { set, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import CustomFormField from '../CustomFormField'
 import SubmitButton from '../SubmitButton'
 import { useState } from 'react'
-import { UserFormVaidation } from '@/lib/validation'
+import { UserFormValidation } from '@/lib/validation'
 import { useRouter } from 'next/navigation'
+import { createUser } from '@/lib/actions/patient.actions'
 
 export enum FormFieldType {
   INPUT = 'input',
@@ -32,27 +33,13 @@ export enum FormFieldType {
   SKELETON = 'skeleton',
 }
 
-const formSchema = z.object({
-  username: z.string().min(5, {
-    message: 'Username must be at least 5 characters.',
-  }),
-  email: z.string().email({
-    message: 'Please enter a valid email address.',
-  }),
-  phone: z.string().min(10, {
-    message: 'Please enter a valid phone number.',
-  }),
-})
-
 const PatientForm = () => {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  const router = useRouter()
-
   // 1. Define your form
-  const form = useForm<z.infer<typeof UserFormVaidation>>({
-    resolver: zodResolver(UserFormVaidation),
-    // a resolver is a function that takes a form schema and returns a form resolver which is a function that returns a form with validation meaning that it will validate the form schema
+  const form = useForm<z.infer<typeof UserFormValidation>>({
+    resolver: zodResolver(UserFormValidation),
     defaultValues: {
       name: '',
       email: '',
@@ -61,18 +48,24 @@ const PatientForm = () => {
   })
 
   // 2. Define a submit handler.
-  function onSubmit({ name, email, phone }: z.infer<typeof UserFormVaidation>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
+  const onSubmit = async (values: z.infer<typeof UserFormValidation>) => {
     setIsLoading(true)
 
-    // try {
-    //   const userData = { name, email, phone }
-    //   const user = await createUser(userData)
-    //   if (user) router.push(`/patients/${user.#id/register}`)
-    // } catch (error) {
-    //   console.log(error)
-    // }
+    try {
+      console.log('trying inside onSubmit')
+      const user = {
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+      }
+
+      const newUser = await createUser(user)
+      if (newUser) {
+        router.push(`/patients/${newUser.$id}/register`)
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
