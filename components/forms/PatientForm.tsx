@@ -16,6 +16,19 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
+import CustomFormField from '../CustomFormField'
+import SubmitButton from '../SubmitButton'
+import { useState } from 'react'
+
+export enum FormFieldType {
+  INPUT = 'input',
+  TEXTAREA = 'textarea',
+  PHONE_INPUT = 'phoneInput',
+  CHECKBOX = 'checkbox',
+  DATE_PICKER = 'datePicker',
+  SELECT = 'select',
+  SKELETON = 'skeleton',
+}
 
 const formSchema = z.object({
   username: z.string().min(5, {
@@ -24,6 +37,8 @@ const formSchema = z.object({
 })
 
 const PatientForm = () => {
+  const [isLoading, setIsLoading] = useState(false)
+
   // 1. Define your form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,23 +62,33 @@ const PatientForm = () => {
           <h1 className='header'>Hi there 👋</h1>
           <p className='text-dark-700'>Schedule your first appointment</p>
         </section>
-        <FormField
+
+        <CustomFormField
+          fieldType={FormFieldType.INPUT}
           control={form.control}
-          name='username'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder='shadcn' {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          name='name'
+          label='Full Name'
+          placeholder='John Doe'
+          iconSrc='/assets/icons/user.svg'
+          iconAlt='user'
         />
-        <Button type='submit'>Submit</Button>
+        <CustomFormField
+          fieldType={FormFieldType.INPUT}
+          control={form.control}
+          name='email'
+          label='Email'
+          placeholder='jonndoe@gmail.com'
+          iconSrc='/assets/icons/email.svg'
+          iconAlt='email'
+        />
+        <CustomFormField
+          fieldType={FormFieldType.PHONE_INPUT}
+          control={form.control}
+          name='phone'
+          label='Phone Number'
+          placeholder='(555) 123-4567'
+        />
+        <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>
       </form>
     </Form>
   )
